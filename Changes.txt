@@ -1,0 +1,36 @@
+====CHANGES [29/07/2024]====
+
+
+[Implementação]
+
+•Desenhado um novo menu para implementação.
+•Novo design da carta
+•Tentativa de implementação do novo menu. Passível de revisão devido aos erros .
+•Carregamento de nova fonte no menu. (Coolvetica). Ainda não foi possível testar os valores de tamanho e espaçamento
+da fonte, os colocados ali são aleatórios.
+
+
+
+[Alterações]
+•Mudança na forma de impressão da escolha do menu no terminal
+•Alterado o nome que abre na nova tela.
+•Adicionado um gradiente nas abas laterais da aba NovoJogo(Favor dar feedback, opiniões mistas).
+•Modificada a carta da parte de trás na pasta cartas.
+
+[Fixes]
+•Arrumado problema de resolução nas opções 2 e 4.
+
+
+==================
+
+
+
+@TODO
+
+[Fixes]
+Fontes e implementação do menu gráfico
+
+[OFF]
+FEEDBACK MENU
+
+
