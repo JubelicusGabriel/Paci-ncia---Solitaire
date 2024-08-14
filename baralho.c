@@ -324,7 +324,6 @@ esta funcao for usada para plotar as cartas viradas para cima, caso contrario de
             ImageResize(&cartaImagem, 50*multi_res, 70*multi_res);
             carta->info.imagem = LoadTextureFromImage(cartaImagem);
             UnloadImage(cartaImagem);
-
             DrawTexture(carta->info.imagem,(100 + (coluna-1)*65)*multi_res, (10+ i*20*multi_res), WHITE);
 
             carta = carta->ant;
@@ -350,3 +349,109 @@ esta funcao for usada para plotar as cartas viradas para cima, caso contrario de
     return -1;
 }
 
+
+/*NOTE:
+[DONE] Modo de verificar a compatibilidade das cartas na coluna e criar uma flag se é interagível ou não.
+[DONE] Fazer cartas anteriores incompatíveis quando há incompatibilidade anterior
+	e evitando que a primeira carta fique não interágivel numa fila tamanho 1.
+[DONE] Descobrir como fazer uma hitbox atrelada à área da carta desenhada na tela.
+
+// TODO: 
+[1]
+Achar uma forma de armazenar as hitboxes criadas de forma que eu possa verificar o mouse frame a frame durante o jogo.
+
+
+
+[2]
+Depois disso, criar uma função que cria uma fila com uma duplicata das cartas e usa para desenhar elas no lugar do cursor
+enquanto o mouse estiver pressionado
+
+
+[3]
+Depois, fazer uma verificação que, ao largar o mouse, identifica acima de qual coluna foi feito isso (através de hitbox simplificada,
+1 para cada coluna) e verifica se a primeira carta das fila duplicada é compatível, se sim, adiciona as cartas à outra fila.Se não,
+de momento não faz nada. (Som depois).
+
+*/ 
+void verificaCompatibilidade(FilaEnc *fila) { 
+    // Isso aqui foi pensado pra rodar a cada frame do jogo, mas acho que n fica pesado demais. 
+    // Daria pra pensar numa implementação que só rodaria quando uma "flag" improvisada
+    // que faria com que rodasse apenas se ouve alguma alteração na disposicao das filas, 
+    // mas acho que com o tempo limitado n é boa ideia
+
+    if (fila == NULL || vaziaFilaEnc(fila)){
+        return;
+    }
+
+    NodoFEnc *atual = fila->fim;
+    
+    int compatibilidadeAnterior = 1; 
+    // Se alguma carta anterior não for compatível, esse contador se torna 0 e deve fazer todas as anteriores nao serem mais "compativeis"
+    // é basicamente uma forma de garantir que não serão movidas sem a vontade do jogador ou com cartas nao compatíveis na frente.
+
+    while(atual != NULL){
+        if (atual->ant == NULL) {
+            // Se não tem carta anterior, a carta atual é automaticamente compatível
+            // Antes fiz sem essa verificação mas acho que aí bugaria e travaria as filas com 1 carta só, fazendo impossíveis de mexer e de terminar o jogo
+            atual->info.seq_compat = 1;
+
+        } else if (compatibilidadeAnterior == 0) {
+            // Anteriormente (na verificação) já teve incompatibilidade
+            atual->info.seq_compat = 0; // marcando como incomp
+
+        } else {
+            // Verifica a compatibilidade com base nos naipes
+            // Spades e clubs tem que ser 1 com diamonds e hearts
+            if ((strcmp(atual->info.naipe, "spades") == 0 || strcmp(atual->info.naipe, "clubs") == 0) &&
+                (strcmp(atual->ant->info.naipe, "diamonds") == 0 || strcmp(atual->ant->info.naipe, "hearts") == 0)) {
+                atual->info.seq_compat = 1;
+
+                // Hearts e diamonds tem que ser 1 com spades e clubs
+            } else if ((strcmp(atual->info.naipe, "diamonds") == 0 || strcmp(atual->info.naipe, "hearts") == 0) &&
+                       (strcmp(atual->ant->info.naipe, "spades") == 0 || strcmp(atual->ant->info.naipe, "clubs") == 0)) {
+                atual->info.seq_compat = 1;
+
+            } else { 
+                // Aqui é se ela for incompatível mesmo, aí se já for, nas próximas n vai precisar 
+                // de tanta verificacao e fica menos custoso
+                atual->info.seq_compat = 0;
+                compatibilidadeAnterior = 0;  // Marca que ja teve incompatibliidade
+            }
+        }
+
+        // Vai pra carta anterior na fila
+        atual = atual->ant;
+    }
+}
+
+
+
+//Tentativa de fazer uma função que cria um retângulo pra interação (hitbox) com cada carta compatível
+void criaHitboxColunas(FilaEnc *fila, int coluna, float multi_res){ 
+    
+    if (fila == NULL || vaziaFilaEnc(fila)){ //se a fila estiver vazia ou n for valida, sai da func
+        return;
+    }
+
+    NodoFEnc *atual = fila->ini;
+    while(atual!=NULL){
+        if(atual->info.seq_compat == 1){
+            //Esse retângulo vai ser usado pra identificar que o mouse tá sobre a carta
+            int i = 0; //Contador de qual carta na fila é
+
+            Rectangle hitbox;
+            hitbox.x = (100 + (coluna-1)*65)*multi_res;
+            hitbox.y = (10+ i*20*multi_res);
+            hitbox.width = 50*multi_res;
+            if(atual->prox == NULL){
+                hitbox.height = 70*multi_res; //Se a cata for a da frente, a hitbox fica da carta toda
+            }else{
+                hitbox.height = 20*multi_res; //Se a carta for uma das de trás, a hitbox fica só no pedaço que n tem overlap
+            }
+
+            i++;//Aumenta o contador pra dar displacement(espaçamento) na carta
+            
+        }
+    }
+
+}

@@ -5,6 +5,7 @@
 #include <string.h>
 #include "raylib.h"
 
+
     /*
         Global, utilizada por todas as funcões. Se acharem que tem problema, só avisar que mudamos
         A implementação
@@ -18,7 +19,7 @@ void iniciaMenu() {
 
 
     //Dando load na fonte
-    Font fontMenu = LoadFont("resources/coolvetica_rg.otf");
+    Font fontMenu = LoadFont("resources/coolveticarg.otf");
       //Verificação se a fonte falhou ao carregar (Obrigado StackOverflow.)
     if (fontMenu.texture.id == 0){
         printf("Falha ao carregar fonte!\n");
@@ -104,6 +105,17 @@ void iniciaMenu() {
 
     SetTargetFPS(30); //Testando para a implementação nos menus.
     while (!WindowShouldClose()) {
+
+        //Inicialização retângulos
+
+                //Rectangle exemplo = {pos x, pos y, width, height};
+       Rectangle rectitulo =     {200*multi_res, 040*multi_res, 240*multi_res, 60*multi_res};
+       Rectangle rectnovojogo =  {240*multi_res, 140*multi_res, 160*multi_res, 40*multi_res};
+       Rectangle rectcontinuar = {240*multi_res, 200*multi_res, 160*multi_res, 40*multi_res};
+       Rectangle rectcreditos =  {240*multi_res, 260*multi_res, 160*multi_res, 40*multi_res};
+       Rectangle rectsair =      {240*multi_res, 320*multi_res, 160*multi_res, 40*multi_res};
+    
+        //Desenhando
         BeginDrawing();
 
         ClearBackground(GREEN);
@@ -114,23 +126,46 @@ void iniciaMenu() {
         A primeira vai ser referente ao tamanho, a segunda, espaçamento
         */
 
-        //Título
+       
+        // [TITULO]
             //Rectangle
-        DrawRectangle(200*multi_res, 40*multi_res, 240*multi_res, 60*multi_res, LIGHTGRAY);
+        DrawRectangle(rectitulo.x, rectitulo.y, rectitulo.width, rectitulo.height, LIGHTGRAY);
             //Texto do Título
         DrawTextEx(fontMenu, "SOLITAIRE", (Vector2){ 40.0f*multi_res, 200.0f*multi_res}, ((float) 8 * multi_res), (float) 2 * multi_res, RAYWHITE);
         
-        //Opções
-        DrawRectangleLines(240*multi_res, 140*multi_res, 160*multi_res, 40*multi_res, RAYWHITE);
-        DrawRectangleLines(240*multi_res, 200*multi_res, 160*multi_res, 40*multi_res, RAYWHITE);
-        DrawRectangleLines(240*multi_res, 260*multi_res, 160*multi_res, 40*multi_res, RAYWHITE);
-        DrawRectangleLines(240*multi_res, 320*multi_res, 160*multi_res, 40*multi_res, RAYWHITE);
+
+
+        // [OPCOES]
+
+        //Pegando a posição do mouse para fazer as verificações das hitboxes
+        Vector2 mousePosition = GetMousePosition();
+
+
+        //Inicializando cores das opcoes
+        // ? = operador ternário, true = yellow, false = raywhite, é só pra eu n ter que fazer  verific completa aqui
+        Color corNovoJogo = CheckCollisionPointRec(mousePosition, rectnovojogo) ? YELLOW : RAYWHITE;
+        Color corContinuar = CheckCollisionPointRec(mousePosition, rectcontinuar) ? YELLOW : RAYWHITE;
+        Color corCreditos = CheckCollisionPointRec(mousePosition, rectcreditos) ? YELLOW : RAYWHITE;
+        Color corSair = CheckCollisionPointRec(mousePosition, rectsair) ? YELLOW : RAYWHITE;
+
+        //Desenhando retângulos coloridos
+        DrawRectangleLines(rectnovojogo.x, rectnovojogo.y, rectnovojogo.width, rectnovojogo.height, corNovoJogo);
+        DrawRectangleLines(rectcontinuar.x, rectcontinuar.y, rectcontinuar.width, rectcontinuar.height, corContinuar);
+        DrawRectangleLines(rectcreditos.x, rectcreditos.y, rectcreditos.width, rectcreditos.height, corCreditos);
+        DrawRectangleLines(rectsair.x, rectsair.y, rectsair.width, rectsair.height, corSair);
+
+
+        
 
         //Textos das opções
-        DrawTextEx(fontMenu, "Novo Jogo", (Vector2){ 140.0f*multi_res, 240.0f*multi_res}, ((float) 1 * multi_res), (float) 2 * multi_res, RAYWHITE);
-        DrawTextEx(fontMenu, "Continuar", (Vector2){ 200.0f*multi_res, 240.0f*multi_res}, ((float) 1 * multi_res), (float) 2 * multi_res, RAYWHITE);
-        DrawTextEx(fontMenu, "Creditos", (Vector2){260.0f*multi_res, 240.0f*multi_res}, ((float) 1 * multi_res), (float) 2 * multi_res, RAYWHITE);
-        DrawTextEx(fontMenu, "Sair do Jogo", (Vector2){320.0f*multi_res, 240.0f*multi_res}, ((float) 1 * multi_res), (float) 2 * multi_res, RAYWHITE);
+            //Aqui, infelizmente n entendi como configurar o texto ainda, entao meio que to chutando as posicoes
+        DrawTextEx(fontMenu, "Novo Jogo", (Vector2){ 140.0f*multi_res, 240.0f*multi_res}, ((float) 1 * multi_res), (float) 2 * multi_res, corNovoJogo);
+        DrawTextEx(fontMenu, "Continuar", (Vector2){ 200.0f*multi_res, 240.0f*multi_res}, ((float) 1 * multi_res), (float) 2 * multi_res, corContinuar);
+        DrawTextEx(fontMenu, "Creditos", (Vector2){260.0f*multi_res, 240.0f*multi_res}, ((float) 1 * multi_res), (float) 2 * multi_res, corCreditos);
+        DrawTextEx(fontMenu, "Sair do Jogo", (Vector2){320.0f*multi_res, 240.0f*multi_res}, ((float) 1 * multi_res), (float) 2 * multi_res, corSair);
+        
+
+
 
         //Desenhando as cartas do menu
         DrawTexture(textcarta_menu01, 60*multi_res, 120*multi_res, RAYWHITE);
@@ -138,12 +173,35 @@ void iniciaMenu() {
 
 
 
-        EndDrawing();
+        EndDrawing();  
 
-        //Unloading textures
+        //[Verificando a posicao e acao do mouse]
+            //vendo se tá pressionado, se estiver, ele vai desenhar em cor diferente o retangulo e o texto selec
+
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            if (CheckCollisionPointRec(mousePosition, rectnovojogo)) {
+                opcao = 1; //newgame
+                break;
+            } else if (CheckCollisionPointRec(mousePosition, rectcontinuar)) {
+                opcao = 2; //continuar
+                break;
+            } else if (CheckCollisionPointRec(mousePosition, rectcreditos)) {
+                opcao = 3; //creditos
+                break;
+            } else if (CheckCollisionPointRec(mousePosition, rectsair)) {
+                opcao = 4; //sair
+                break;
+            }
+        }
+
+
+
+
+        
         
     }
 
+    //Unloading textures
     UnloadTexture(textcarta_menu01);
     UnloadTexture(textcarta_menu02);
     UnloadFont(fontMenu);
@@ -152,12 +210,13 @@ void iniciaMenu() {
     //Enviando para a tela responsável
     if (opcao == 1) {
         novoJogo();
-    }
-    else if (opcao == 4) {
-        UnloadFont(fontMenu);
+    } else if (opcao == 3) {
+        creditos();
+    } else if (opcao == 4) {
         sair();
+    } else {
+        iniciaMenu();
     }
-    else iniciaMenu();
 }
 
 void novoJogo() {
@@ -332,6 +391,7 @@ void carregarJogo() {
 
 }
 
+//@TODO: Desenhar créditos.
 void creditos() {
     printf("TODOS OS DIREITOS RESERVADOS\nGABRIEL\nGUSTAVO\nMURILO");
 }

@@ -15,9 +15,11 @@ typedef struct{
     char imagemtxt[35];
     Texture2D imagem;
     int sentido; //de costas (0) ou de frente (1);
+    int seq_compat; // Boll, sequência de cartas na pilha e compativel ou nao
 }Carta;
 
 typedef Carta Info;
+
 
 typedef struct nodoLEnc{
     Info info;
@@ -41,6 +43,7 @@ typedef struct filaEnc{
    NodoFEnc *ini;
    NodoFEnc *fim;
 } FilaEnc;
+
 
 // Funcao que cria uma fila
 FilaEnc* criaFilaEnc();
@@ -99,5 +102,9 @@ int insereFilaViradoCima(FilaEnc *fila, Info info);
 int inserePilhaViradoBaixo(PilhaEnc *pilha, Info info);
 
 int desenhaCartasColuna(FilaEnc *fila, PilhaEnc *pilha, int coluna, int sentido, float multi_res, int numBaixo);
+
+void verificaCompatibilidade(FilaEnc *fila); // verifica a compatibilidade das cartas nas filas viradas pra cima, de forma a colocar uma flag indicando que é compatível/possível de mover.
+
+void criaHitboxColunas(FilaEnc *fila, int coluna, float multi_res); //Cria hitboxes das cartas nas colunas
 
 #endif // BARALHO_H_INCLUDED

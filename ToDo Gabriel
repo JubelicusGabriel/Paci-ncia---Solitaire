@@ -1,0 +1,20 @@
+[DONE] Modo de verificar a compatibilidade das cartas na coluna e criar uma flag se é interagível ou não.
+[DONE] Fazer cartas anteriores incompatíveis quando há incompatibilidade anterior
+	e evitando que a primeira carta fique não interágivel numa fila tamanho 1.
+[DONE] Descobrir como fazer uma hitbox atrelada à área da carta desenhada na tela.
+
+
+[1]
+Achar uma forma de armazenar as hitboxes criadas de forma que eu possa verificar o mouse frame a frame durante o jogo.
+
+
+
+[2]
+Depois disso, criar uma função que cria uma fila com uma duplicata das cartas e usa para desenhar elas no lugar do cursor
+enquanto o mouse estiver pressionado
+
+
+[3]
+Depois, fazer uma verificação que, ao largar o mouse, identifica acima de qual coluna foi feito isso (através de hitbox simplificada,
+1 para cada coluna) e verifica se a primeira carta das fila duplicada é compatível, se sim, adiciona as cartas à outra fila.Se não,
+de momento não faz nada. (Som depois).
