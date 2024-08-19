@@ -5,9 +5,21 @@
 #include <stdio.h>
 #include <string.h>
 #include <raylib.h>
-#include "cartas.h"
 
 #define NOME_NAIPE 10
+
+typedef struct{
+    int chave;
+    int valor;
+    char naipe[NOME_NAIPE];
+    char imagemtxt[35];
+    Texture2D imagem;
+    int sentido; //de costas (0) ou de frente (1);
+    int seq_compat; // Boll, sequência de cartas na pilha e compativel ou nao
+}Carta;
+
+typedef Carta Info;
+
 
 typedef struct nodoLEnc{
     Info info;
@@ -31,6 +43,7 @@ typedef struct filaEnc{
    NodoFEnc *ini;
    NodoFEnc *fim;
 } FilaEnc;
+
 
 // Funcao que cria uma fila
 FilaEnc* criaFilaEnc();
@@ -77,8 +90,6 @@ int insereInicioListaCircEnc(ListaCircEnc *lista, Info info);
 // Fun��o que insere um nodo no fim de uma lista
 int insereFimListaCircEnc(ListaCircEnc *lista, Info info);
 
-int removeInfoListaCircEnc(ListaCircEnc *lista, int chave);
-
 // Funcao que resgata um nodo com uma informacao de uma lista
 NodoLEnc* buscaInfoListaCircEnc(ListaCircEnc* lista, int chave);
 
@@ -86,24 +97,14 @@ ListaCircEnc* cria_baralho();
 
 ListaCircEnc* embaralha_baralho(ListaCircEnc* baralho);
 
-int insereFilaViradoCima(FilaEnc *fila, Info info, ListaCircEnc *baralhoOrigem, PilhaEnc *pilhaOrigem, FilaEnc *filaOrigem);
+int insereFilaViradoCima(FilaEnc *fila, Info info);
 
-int inserePilhaViradoBaixo(PilhaEnc *pilha, Info info, ListaCircEnc *baralhoOrigem);
+int inserePilhaViradoBaixo(PilhaEnc *pilha, Info info);
 
 int desenhaCartasColuna(FilaEnc *fila, PilhaEnc *pilha, int coluna, int sentido, float multi_res, int numBaixo);
 
-int verificaPossibilidadeMudanca(int valor, int naipe, FilaEnc *colunaDestino, FilaEnc *colunas_cima[7]);
+void verificaCompatibilidade(FilaEnc *fila); // verifica a compatibilidade das cartas nas filas viradas pra cima, de forma a colocar uma flag indicando que é compatível/possível de mover.
 
-void mudaCartaColuna(FilaEnc *colunaOrigem, FilaEnc *colunaDestino, int valor, int naipe);
-
-void desviraCarta(FilaEnc *coluna_cima, PilhaEnc *coluna_baixo);
-
-int desenhaCartasViradoBaixo(PilhaEnc *pilha, int coluna, float multi_res);
-
-void desenhaCartasViradoCima(FilaEnc *fila, int coluna, float multi_res, int numBaixo);
-
-void desenhaBaralhoCompras(ListaCircEnc *baralho, int clicado, float multi_res);
-
-
+void criaHitboxColunas(FilaEnc *fila, int coluna, float multi_res); //Cria hitboxes das cartas nas colunas
 
 #endif // BARALHO_H_INCLUDED

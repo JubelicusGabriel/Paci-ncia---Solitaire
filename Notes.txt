@@ -1,0 +1,67 @@
+Fazer uma função que lê as cartas da fila duplamente encadeada onde ela está, e identifica na flag da carta se essa carta possui
+cartas compatíveis com ela até o limite. Provavelmente fazendo percorrer até o final da fila e voltando listando elas como
+compatíveis com a próxima ou não levando o naipe em consideração.
+
+
+ algo do tipo if(carta naipe == spades &&  ((aux prox naipe==diamonds)or(aux prox naipe == hearts))
+					   ((aux prox naipe==diamonds)or(aux prox naipe == hearts))
+					   ((aux prox naipe==diamonds)or(aux prox naipe == hearts))
+					   ((aux prox naipe==diamonds)or(aux prox naipe == hearts))
+	      ){
+		carta compat = 1;
+		
+	      }else
+		carta compat = 0;
+
+
+================================================================================
+[DONE] Modo de verificar a compatibilidade das cartas na coluna e criar uma flag se é interagível ou não.
+[DONE] Fazer cartas anteriores incompatíveis quando há incompatibilidade anterior
+	e evitando que a primeira carta fique não interágivel numa fila tamanho 1.
+[DONE] Descobrir como fazer uma hitbox atrelada à área da carta desenhada na tela.
+
+
+[1]
+Achar uma forma de armazenar as hitboxes criadas de forma que eu possa verificar o mouse frame a frame durante o jogo.
+
+
+
+[2]
+Depois disso, criar uma função que cria uma fila com uma duplicata das cartas e usa para desenhar elas no lugar do cursor
+enquanto o mouse estiver pressionado
+
+
+[3]
+Depois, fazer uma verificação que, ao largar o mouse, identifica acima de qual coluna foi feito isso (através de hitbox simplificada,
+1 para cada coluna) e verifica se a primeira carta das fila duplicada é compatível, se sim, adiciona as cartas à outra fila.Se não,
+de momento não faz nada. (Som depois).
+
+
+//
+//Tentativa de adicionar as hitboxes criadas na outra numa lista pra tentar ler dinamicamente durante o jogo 
+void adicionaHitBox(ListaHitboxes *lista, Rectangle novaHitbox){
+    HitboxNode *novoNodo = (HitboxNode *)malloc(sizeof(HitboxNode));
+    if (novoNodo == NULL) {
+        return; //Se retornar aq é pq deu erro
+    }
+
+    novoNodo->hitbox = novaHitbox;
+    novoNodo->prox = NULL;
+    novoNodo->ant = lista->fim;
+
+    if()
+}
+
+
+
+
+typedef struct hitboxNode { //Struct da hitbox das cartas. Rectangle armazena as especificações de pos e 
+    Rectangle hitbox;
+    struct hitboxNode *prox;
+    struct hitboxNode *ant;
+} HitboxNode;
+
+typedef struct { //Lista que armazena as hitboxes criadas durante o jogo sobre as cartas
+    HitboxNode *ini;
+    HitboxNode *fim;
+} ListaHitboxes;

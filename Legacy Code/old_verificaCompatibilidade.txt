@@ -1,0 +1,44 @@
+void verificaCompatibilidade(FilaEnc *fila) { //Isso aqui foi pensado pra rodar a cada frame do jogo, mas acho que n fica pesado demais. Daria pra pensar numa implementação que só rodaria quando uma "flag" improvisada
+                                            //que faria com que rodasse apenas se ouve alguma alteração na disposicao das filas, mas acho que com o tempo limitado n é boa ideia
+
+    if (fila == NULL || vaziaFilaEnc(fila)){
+        return;
+    }
+
+    NodoFEnc *atual = fila->fim;
+    
+    int compatiblidadeAnterior = 1; //Se alguma carta anterior não for compatível, esse contador se torna 0 e deve fazer todas as anteriores nao serem mais "compativeis"
+                                    // é basicamente uma forma de garantir que não serão movidas sem a vontade do jogador ou com cartas nao compatíveis na frente.
+
+    while(atual != NULL){
+        if (compatiblidadeAnterior){ //Anterior na verificação, mas como a lista tá vindo do fim pro início, é a proxima carta na sequência sendo incompativel
+                //[Verificando]
+            if(compatiblidadeAnterior == 0){
+                //Anteriormente (na verificação) já teve incompatibilidade
+                atual->info.seq_compat = 0; //marcando como incomp
+            }else if (atual->ant == NULL) {
+                // Se não tem carta anterior, a carta atual é automaticamente compatível
+                //Antes fiz sem essa verificação mas acho que aí bugaria e travaria as filas com 1 carta só, fazendo impossíveis de mexer e de terminar o jogo
+                atual->info.seq_compat = 1;
+            } else {
+                // Verifica a compatibilidade com base nos naipes
+                    //Spades e clubs tem que ser 1 com diamonds e herats
+                if ((strcmp(atual->info.naipe, "spades") == 0 || strcmp(atual->info.naipe, "clubs") == 0) &&
+                    (strcmp(atual->ant->info.naipe, "diamonds") == 0 || strcmp(atual->ant->info.naipe, "hearts") == 0)) {
+                    atual->info.seq_compat = 1;
+                    //Hearts e diamonds tem que ser 1 com spades e clubs
+                } else if ((strcmp(atual->info.naipe, "diamonds") == 0 || strcmp(atual->info.naipe, "hearts") == 0) &&
+                        (strcmp(atual->ant->info.naipe, "spades") == 0 || strcmp(atual->ant->info.naipe, "clubs") == 0)) {
+                    atual->info.seq_compat = 1;
+                
+                } else { //Aqui é se ela for incompatível mesmo, aí se já for, nas proximas n vai precisar de tanta verificacao e fica menos custoso
+                    atual->info.seq_compat = 0;
+                    compatiblidadeAnterior = 0;  // Marca que ja teve incompatibliidade
+                }
+            }
+        }
+
+        //Vai pra carta anterior na fila
+        atual = atual->ant;
+    }
+}

@@ -18,6 +18,3 @@ enquanto o mouse estiver pressionado
 Depois, fazer uma verificação que, ao largar o mouse, identifica acima de qual coluna foi feito isso (através de hitbox simplificada,
 1 para cada coluna) e verifica se a primeira carta das fila duplicada é compatível, se sim, adiciona as cartas à outra fila.Se não,
 de momento não faz nada. (Som depois).
-
-[4]
-@TODO implementar a movimentação colunas -> naipes resolvidos

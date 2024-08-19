@@ -4,12 +4,17 @@
 #include <stdlib.h>
 #include <time.h>
 #include <raylib.h>
+#include "cartas.h"
 
 
 
 #define QUANTIDADE_DE_CARTAS 52
 #define TAMANHO_DO_VETOR 51
 
+/*
+[TADS PADRÕES]
+Código necessário para as TADS introduzidas neste curso
+*/
 
 // Funcao que cria uma fila
 FilaEnc* criaFilaEnc(){
@@ -62,7 +67,6 @@ Info desenfileiraFilaEnc(FilaEnc *fila){
 int vaziaFilaEnc(FilaEnc *fila){
    return (fila->ini == NULL);
 }
-
 // Funcao que cria uma pilha
 PilhaEnc* criaPilhaEnc(){
    PilhaEnc *pilha = (PilhaEnc*)malloc(sizeof(PilhaEnc));
@@ -100,6 +104,8 @@ Info desempilhaPilhaEnc(PilhaEnc* pilha){
    /* Aqui assumimos que desempilha eh 
    chamada apenas se a pilha nao eh vazia */
    Info info = aux->info;
+   if (aux->prox != NULL) 
+    aux->prox->ant = NULL;
    pilha->topo = aux->prox;
    free(aux);
    return info;
@@ -110,7 +116,7 @@ int vaziaPilhaEnc(PilhaEnc *pilha){
    return (pilha->topo == NULL);
 }
 
-// Fun��o que cria uma lista
+// Funcao que cria uma lista
 ListaCircEnc* criaListaCircEnc()
 {
     ListaCircEnc *lista = (ListaCircEnc*)malloc(sizeof(ListaCircEnc));
@@ -121,7 +127,7 @@ ListaCircEnc* criaListaCircEnc()
     return lista;
 }
 
-// Fun��o que destr�i uma lista
+// Funcao que destroi uma lista
 void destroiListaCircEnc(ListaCircEnc *lista)
 {
     if (lista->prim != NULL)
@@ -138,7 +144,7 @@ void destroiListaCircEnc(ListaCircEnc *lista)
     free(lista);
 }
 
-// Fun��o que imprime todos os n�s de uma lista
+// Funcao que imprime todos os nodes de uma lista
 void imprimeListaCircEnc(ListaCircEnc *lista)
 {
     if (lista->prim != NULL)
@@ -146,7 +152,7 @@ void imprimeListaCircEnc(ListaCircEnc *lista)
         NodoLEnc *atual = lista->prim;
         do
         {
-            printf("Chave: %d, Valor: %d, Naipe: %s\n", atual->info.chave, atual->info.valor, atual->info.naipe);
+            printf("Chave: %d, Valor: %d, Naipe: %d\n", atual->info.chave, atual->info.valor, atual->info.naipe);
             atual = atual->prox;
         }
         while (atual != lista->prim);
@@ -157,7 +163,7 @@ void imprimeListaCircEnc(ListaCircEnc *lista)
     }
 }
 
-// Fun��o que insere um n� no in�cio de uma lista
+// Funcao que insere um node no inocio de uma lista
 int insereInicioListaCircEnc(ListaCircEnc *lista, Info info)
 {
     NodoLEnc *novo = (NodoLEnc*)malloc(sizeof(NodoLEnc));
@@ -182,6 +188,7 @@ int insereInicioListaCircEnc(ListaCircEnc *lista, Info info)
     return 1;
 }
 
+// Funcao que insere um node no fim de uma lista
 int insereFimListaCircEnc(ListaCircEnc *lista, Info info) {
     NodoLEnc *novoNodo = (NodoLEnc*)malloc(sizeof(NodoLEnc));
     if (!novoNodo) {
@@ -205,7 +212,32 @@ int insereFimListaCircEnc(ListaCircEnc *lista, Info info) {
     return 1;
 }
 
-// Fun��o que resgata um n� com uma informa��o de uma lista
+// Funcao que remove um nodo de uma lista circular
+int removeInfoListaCircEnc(ListaCircEnc *lista, int chave) {
+    if (lista->prim != NULL) {
+        NodoLEnc *aux = lista->prim;
+
+        //caso nodo seja o primeiro da lista
+        if (lista->prim->info.chave == chave) {
+            NodoLEnc *primeiro = lista->prim;
+            primeiro->prox->ant = primeiro->ant;
+            primeiro->ant->prox = primeiro->prox;
+            lista->prim = lista->prim->prox; 
+            free(primeiro);
+        }
+        else {
+            NodoLEnc *aux = lista->prim;
+            while(aux->info.chave != chave) {
+                aux = aux->prox;
+            }
+            aux->prox->ant = aux->ant;
+            aux->ant->prox = aux->prox;
+            free(aux);
+        }
+    }
+}
+
+// Funcao que resgata um node com uma informacao de uma lista
 NodoLEnc* buscaInfoListaCircEnc(ListaCircEnc* lista, int chave)
 {
     if (lista->prim != NULL)
@@ -221,25 +253,36 @@ NodoLEnc* buscaInfoListaCircEnc(ListaCircEnc* lista, int chave)
     return NULL;
 }
 
+
+/*
+                                [FUNÇÕES BARALHO]
+Funções relacionadas à qualquer interação relacionada ao baralho inicial, explicação mais detalhada é agregada a cada função.
+*/
+
+//A função cria_baralho() é responsável por pegar o arquivo cartas.txt que armazena as informações fundamentais das cartas e usá-las para criar o baralho inicial
 ListaCircEnc* cria_baralho(){
+
+    //Abre o arquivo para leitura
     FILE *txtcartas;
     txtcartas = fopen("cartas.txt", "r");
-
+    
+    //Para cada uma das cartas do baralho, atribui naipe, valor, chave e imagem equivalente.
     Carta carta;
     ListaCircEnc *baralho;
     baralho = criaListaCircEnc();
     for (int i=0; i<52; i++) {
-        fscanf(txtcartas, " %d %s %d %s", &carta.valor, carta.naipe, &carta.chave, carta.imagemtxt);
+        fscanf(txtcartas, " %d %d %d %s", &carta.valor, &carta.naipe, &carta.chave, carta.imagemtxt);
         insereInicioListaCircEnc(baralho, carta);
     }
-
+    //Retorna o identificador do baralho
     return baralho;
 
 }
-
+//A função responsável por pegar o identificador do baralho e embaralhá-lo para que cada jogo seja único.
 ListaCircEnc* embaralha_baralho(ListaCircEnc* baralho)
 {
 
+    //Cria um vetor para armazenar as cartas e outro para armazenar as cartas embaralhadas
     int cartas[TAMANHO_DO_VETOR];
     int cartas_embaralhadas[TAMANHO_DO_VETOR];
     int i, j, aux, menor_valor = 1;
@@ -249,12 +292,12 @@ ListaCircEnc* embaralha_baralho(ListaCircEnc* baralho)
     srand(time(NULL));
 
     //preenchendo o vetor de 1 a 52
-    for(i = 0; i <= QUANTIDADE_DE_CARTAS; i++)
+    for(i = 0; i < QUANTIDADE_DE_CARTAS; i++)
     {
         cartas[i] = i + 1;
     }
     //algoritimo de Fisher-Yates para embaralhar os valores no vetor
-    for(i = TAMANHO_DO_VETOR; i >= 0 ; i--)
+    for(i = QUANTIDADE_DE_CARTAS - 1; i > 0 ; i--)
     {
         j = rand() % (i + 1);
         aux = cartas[i];
@@ -263,7 +306,7 @@ ListaCircEnc* embaralha_baralho(ListaCircEnc* baralho)
     }
 
     //passando os valores embaralhados para o novo vetor
-    for (int k=0;k<TAMANHO_DO_VETOR; k++) {
+    for (int k=0;k<QUANTIDADE_DE_CARTAS; k++) {
         nodoAux = buscaInfoListaCircEnc(baralho, cartas[k]);
         insereInicioListaCircEnc(baralho_embaralhado, nodoAux->info);
     }
@@ -271,8 +314,19 @@ ListaCircEnc* embaralha_baralho(ListaCircEnc* baralho)
     return baralho_embaralhado;
 }
 
+/*      [FUNÇÕES DAS COLUNAS]
 
-int insereFilaViradoCima(FilaEnc *fila, Info info){
+As funções responsáveis por interações e inicializações relacionadas às colunas se encontram aqui.
+*/
+
+/*Tanto a função insereFilaViradoCima como a função insereFilaViradoBaixo tem objetivos similares.
+A função insereFilaViradoCima é responsável por inserir cartas na parte interagível das colunas, ela pode receber um baralho, pilha ou fila de origem.
+Como só um pode ser a origem por vez, os outros argumentos devem receber NULL.
+*/
+int insereFilaViradoCima(FilaEnc *fila, Info info, ListaCircEnc *baralhoOrigem, PilhaEnc *pilhaOrigem, FilaEnc *filaOrigem){
+    //Os parâmetros <tipo>Origem representam o lugar de onde a carta a ser adiocionada veio
+    //Obviamente só um poderá ser escolhido, para os outros deve ser passado NULL;
+    
     NodoFEnc *novo = (NodoFEnc*)malloc(sizeof(NodoFEnc));
    if (fila != NULL){
       novo->info = info;
@@ -285,9 +339,17 @@ int insereFilaViradoCima(FilaEnc *fila, Info info){
    }
 
    novo->info.sentido = 1;
+
+   if (baralhoOrigem) removeInfoListaCircEnc(baralhoOrigem, info.chave);
+
+   //ATENCAO: falta implementar para pilhaOrigem != NULL e filaOrigem != NULL
 }
 
-int inserePilhaViradoBaixo(PilhaEnc *pilha, Info info) {
+/*
+A função insereFilaViradoBaixo é responsável por inserir cartas na parte *NÃO* interagível das colunas.
+Como no jogo o único momento em que ela pode receber é no início, ela só pode receber de um baralho de origem, o inicial.
+*/
+int inserePilhaViradoBaixo(PilhaEnc *pilha, Info info, ListaCircEnc *baralhoOrigem) {
     NodoPEnc *novo = (NodoPEnc*)malloc(sizeof(NodoPEnc));
    if (novo != NULL){ // Idealmente, sempre checar!
       novo->info = info;
@@ -298,8 +360,10 @@ int inserePilhaViradoBaixo(PilhaEnc *pilha, Info info) {
       novo->prox = pilha->topo;
       pilha->topo = novo;
    }
-
     novo->info.sentido = 0;
+
+   if (baralhoOrigem) removeInfoListaCircEnc(baralhoOrigem, info.chave);
+
 }
 
 int desenhaCartasColuna(FilaEnc *fila, PilhaEnc *pilha, int coluna, int sentido, float multi_res, int numBaixo) {
@@ -309,11 +373,12 @@ int desenhaCartasColuna(FilaEnc *fila, PilhaEnc *pilha, int coluna, int sentido,
     O argumento sentido é referente ao sentido da carta (virado para cima ou para baixo);
     O argumento numBaixo, é o número de cartas daquela coluna que estão de cabeça para baixo (é importante apenas quando
 esta funcao for usada para plotar as cartas viradas para cima, caso contrario deve receber 0)
-    */
-    
+    */ 
     NodoLEnc *carta;
     int i = 0;
-    if (sentido == 0) {
+    float largura = 50*multi_res;
+    float altura = 70*multi_res;
+    if (sentido == 0 && pilha->topo != NULL) {
         i = 0;
         carta = pilha->topo;
         while(carta->prox != NULL) {
@@ -321,19 +386,27 @@ esta funcao for usada para plotar as cartas viradas para cima, caso contrario de
         }
         while(carta != NULL) {
             Image cartaImagem = LoadImage("cartas/card_back_red.png");
-            ImageResize(&cartaImagem, 50*multi_res, 70*multi_res);
-            carta->info.imagem = LoadTextureFromImage(cartaImagem);
+            float posX = (100 + (coluna-1)*65)*multi_res;
+            float posY = 10+ i*20*multi_res;
+            ImageResize(&cartaImagem, largura, altura);
+            Texture2D imagem = LoadTextureFromImage(cartaImagem);
             UnloadImage(cartaImagem);
-            DrawTexture(carta->info.imagem,(100 + (coluna-1)*65)*multi_res, (10+ i*20*multi_res), WHITE);
 
+            DrawTexture(imagem,(100 + (coluna-1)*65)*multi_res, (10+ i*20*multi_res), WHITE);
+
+
+            carta->info.hitBox = (Rectangle){posX, posY, largura, altura};
             carta = carta->ant;
             i++;
         }
         return i;
     }
-    else if (sentido == 1) {
+    else if (sentido == 1 && fila->ini != NULL) {
         carta = fila->ini;
+        i=0;
         while(carta != NULL) {
+            float posX = (100 + (coluna-1)*65)*multi_res;
+            float posY = (10+ (numBaixo+i)*20*multi_res);
             Image cartaImagem = LoadImage(carta->info.imagemtxt);
             ImageResize(&cartaImagem, 50*multi_res, 70*multi_res);
             carta->info.imagem = LoadTextureFromImage(cartaImagem);
@@ -341,117 +414,212 @@ esta funcao for usada para plotar as cartas viradas para cima, caso contrario de
 
             DrawTexture(carta->info.imagem,(100 + (coluna-1)*65)*multi_res, (10+ (numBaixo+i)*20*multi_res), WHITE);
 
+            carta->info.hitBox = (Rectangle){posX, posY, largura, altura};
             carta = carta->prox;
             i++;
         }
         return 0;
     }
-    return -1;
+    return 0;
 }
 
 
-/*NOTE:
-[DONE] Modo de verificar a compatibilidade das cartas na coluna e criar uma flag se é interagível ou não.
-[DONE] Fazer cartas anteriores incompatíveis quando há incompatibilidade anterior
-	e evitando que a primeira carta fique não interágivel numa fila tamanho 1.
-[DONE] Descobrir como fazer uma hitbox atrelada à área da carta desenhada na tela.
-
-// TODO: 
-[1]
-Achar uma forma de armazenar as hitboxes criadas de forma que eu possa verificar o mouse frame a frame durante o jogo.
-
-
-
-[2]
-Depois disso, criar uma função que cria uma fila com uma duplicata das cartas e usa para desenhar elas no lugar do cursor
-enquanto o mouse estiver pressionado
-
-
-[3]
-Depois, fazer uma verificação que, ao largar o mouse, identifica acima de qual coluna foi feito isso (através de hitbox simplificada,
-1 para cada coluna) e verifica se a primeira carta das fila duplicada é compatível, se sim, adiciona as cartas à outra fila.Se não,
-de momento não faz nada. (Som depois).
-
-*/ 
-void verificaCompatibilidade(FilaEnc *fila) { 
-    // Isso aqui foi pensado pra rodar a cada frame do jogo, mas acho que n fica pesado demais. 
-    // Daria pra pensar numa implementação que só rodaria quando uma "flag" improvisada
-    // que faria com que rodasse apenas se ouve alguma alteração na disposicao das filas, 
-    // mas acho que com o tempo limitado n é boa ideia
-
-    if (fila == NULL || vaziaFilaEnc(fila)){
-        return;
-    }
-
-    NodoFEnc *atual = fila->fim;
-    
-    int compatibilidadeAnterior = 1; 
-    // Se alguma carta anterior não for compatível, esse contador se torna 0 e deve fazer todas as anteriores nao serem mais "compativeis"
-    // é basicamente uma forma de garantir que não serão movidas sem a vontade do jogador ou com cartas nao compatíveis na frente.
-
-    while(atual != NULL){
-        if (atual->ant == NULL) {
-            // Se não tem carta anterior, a carta atual é automaticamente compatível
-            // Antes fiz sem essa verificação mas acho que aí bugaria e travaria as filas com 1 carta só, fazendo impossíveis de mexer e de terminar o jogo
-            atual->info.seq_compat = 1;
-
-        } else if (compatibilidadeAnterior == 0) {
-            // Anteriormente (na verificação) já teve incompatibilidade
-            atual->info.seq_compat = 0; // marcando como incomp
-
-        } else {
-            // Verifica a compatibilidade com base nos naipes
-            // Spades e clubs tem que ser 1 com diamonds e hearts
-            if ((strcmp(atual->info.naipe, "spades") == 0 || strcmp(atual->info.naipe, "clubs") == 0) &&
-                (strcmp(atual->ant->info.naipe, "diamonds") == 0 || strcmp(atual->ant->info.naipe, "hearts") == 0)) {
-                atual->info.seq_compat = 1;
-
-                // Hearts e diamonds tem que ser 1 com spades e clubs
-            } else if ((strcmp(atual->info.naipe, "diamonds") == 0 || strcmp(atual->info.naipe, "hearts") == 0) &&
-                       (strcmp(atual->ant->info.naipe, "spades") == 0 || strcmp(atual->ant->info.naipe, "clubs") == 0)) {
-                atual->info.seq_compat = 1;
-
-            } else { 
-                // Aqui é se ela for incompatível mesmo, aí se já for, nas próximas n vai precisar 
-                // de tanta verificacao e fica menos custoso
-                atual->info.seq_compat = 0;
-                compatibilidadeAnterior = 0;  // Marca que ja teve incompatibliidade
-            }
+/*Função que desenha as cartas da parte não interagível (topo, cartas viradas) da coluna.
+Recebe a pilha à ser desenhada, a posição (n° de coluna) para ser posicionada e o float multi_res para escaloná-la.
+Retorna um inteiro que identifica quantas cartas foram desenhadas na parte não interagível para que a parte interagível
+seja desenhada com um offset correspondente
+*/
+int desenhaCartasViradoBaixo(PilhaEnc *pilha, int coluna, float multi_res) {
+    NodoLEnc *carta;
+    int i = 0;
+    float largura = 50*multi_res;
+    float altura = 70*multi_res;
+    if (pilha->topo != NULL) {
+        i = 0;
+        carta = pilha->topo;
+        while(carta->prox != NULL) {
+            carta = carta->prox;
         }
+        while(carta != NULL) {
+            Image cartaImagem = LoadImage("cartas/card_back_red.png");
+            //Offset relacionado à posição da coluna no campo de jogo
+            float posX = (100 + (coluna-1)*65)*multi_res;
+            //20 é o valor de offset entre cada uma das cartas para que a de trás ainda seja visível.
+            float posY = 10+ i*20*multi_res;
+            ImageResize(&cartaImagem, largura, altura);
+            Texture2D imagem = LoadTextureFromImage(cartaImagem);
+            UnloadImage(cartaImagem);
 
-        // Vai pra carta anterior na fila
-        atual = atual->ant;
+            DrawTexture(imagem,(100 + (coluna-1)*65)*multi_res, (10+ i*20*multi_res), WHITE);
+
+
+            carta->info.hitBox = (Rectangle){posX, posY, largura, altura};
+            carta = carta->ant;
+            i++;
+        }
+        return i;
+    }
+    return 0;
+}
+
+/*Função que desenha as cartas da parte interagível (topo, cartas de frente) da coluna.
+Recebe a fila à ser desenhada, a posição (n° de coluna) para ser posicionada, o float multi_res para escaloná-la e
+o número de cartas não interagíveis da coluna para que possa receber um offset compatível.
+*/
+void desenhaCartasViradoCima(FilaEnc *fila, int coluna, float multi_res, int numBaixo) {
+    NodoLEnc *carta;
+    float largura = 50*multi_res;
+    float altura = 70*multi_res;
+    int i = 0;
+    if (fila->ini != NULL) {
+        carta = fila->ini;
+        while(carta != NULL) {
+            float posX = (100 + (coluna-1)*65)*multi_res;
+            float posY = (10+ (numBaixo+i)*20*multi_res);
+            Image cartaImagem = LoadImage(carta->info.imagemtxt);
+            ImageResize(&cartaImagem, 50*multi_res, 70*multi_res);
+            carta->info.imagem = LoadTextureFromImage(cartaImagem);
+            UnloadImage(cartaImagem);
+
+            DrawTexture(carta->info.imagem,(100 + (coluna-1)*65)*multi_res, (10+ (numBaixo+i)*20*multi_res), WHITE);
+
+            carta->info.hitBox = (Rectangle){posX, posY, largura, altura};
+            carta = carta->prox;
+            i++;
+        }
     }
 }
 
+/*Função que verifica se é possível realizar a mudança de carta de uma coluna para outra.
+Recebe a carta que será movida(valor e naipe), a coluna de destino e um vetor de filas de cartas para verificar
+possibilidade. Retorna o índice da coluna_cima onde a carta pode ser movida.
+Implementada dessa forma como alternativa a função ~void verificaCompatibilidade(FilaEnc *fila)~ que criava um marcador na carta que era mudado à cada
+verificação.
+*/
+int verificaPossibilidadeMudanca(int valor, int naipe, FilaEnc *colunaDestino, FilaEnc *colunas_cima[7]) {
+    //naipes:
+    // 1 -> Copas; 2 -> Ouros; 3 -> Paus; 4 -> Espadas;
 
+    NodoLEnc *cartaBaixo = colunaDestino->fim;
+    FilaEnc *filaAux;
+    NodoLEnc *cartaAux;
 
-//Tentativa de fazer uma função que cria um retângulo pra interação (hitbox) com cada carta compatível
-void criaHitboxColunas(FilaEnc *fila, int coluna, float multi_res){ 
-    
-    if (fila == NULL || vaziaFilaEnc(fila)){ //se a fila estiver vazia ou n for valida, sai da func
-        return;
-    }
+    //verifica se uma das colunas_cima contém a carta, se sim, retorna o index da coluna
+    for (int i=0;i<=6;i++) {
+        filaAux = colunas_cima[i];
+        cartaAux = filaAux->ini;
+        while (cartaAux != NULL) {
+            if (cartaAux->info.valor == valor && cartaAux->info.naipe == naipe) {
+                if (cartaBaixo->info.valor == (valor + 1)) {
+                    if (cartaBaixo->info.naipe <= 2 && naipe > 2) {
+                        return i; //Se for, manda o index
+                    }
+                    else if (cartaBaixo->info.naipe > 2 && naipe <= 2) {
+                        return i; //Se for, manda o index
+                    }
+                }
 
-    NodoFEnc *atual = fila->ini;
-    while(atual!=NULL){
-        if(atual->info.seq_compat == 1){
-            //Esse retângulo vai ser usado pra identificar que o mouse tá sobre a carta
-            int i = 0; //Contador de qual carta na fila é
-
-            Rectangle hitbox;
-            hitbox.x = (100 + (coluna-1)*65)*multi_res;
-            hitbox.y = (10+ i*20*multi_res);
-            hitbox.width = 50*multi_res;
-            if(atual->prox == NULL){
-                hitbox.height = 70*multi_res; //Se a cata for a da frente, a hitbox fica da carta toda
-            }else{
-                hitbox.height = 20*multi_res; //Se a carta for uma das de trás, a hitbox fica só no pedaço que n tem overlap
             }
-
-            i++;//Aumenta o contador pra dar displacement(espaçamento) na carta
-            
+            //Movendo pela fila
+            cartaAux = cartaAux->prox;
         }
     }
+    return -1; //Se *NÃO* for, manda um index inválido
+    }
+
+/*
+Função que factualmente muda a carta de uma coluna para outra.
+Recebe a coluna de origem e coluna de destino, valor e naipe da carta.
+*/
+void mudaCartaColuna(FilaEnc *colunaOrigem, FilaEnc *colunaDestino, int valor, int naipe) {
+    FilaEnc *filaAux = criaFilaEnc();
+    NodoFEnc *cartaAux;
+    Info cartaRemov;
+
+    /*
+    Checa uma a uma as cartas da coluna de origem pelo correto valor e naipe enviados. Quando encontra, remove ela e coloca na fila auxiliar.
+
+    */
+    cartaAux = colunaOrigem->ini;
+    if (cartaAux->info.valor != valor && cartaAux->info.naipe != naipe) {
+        while(cartaAux->info.valor != valor && cartaAux->info.naipe != naipe) {
+            cartaRemov = desenfileiraFilaEnc(colunaOrigem);
+            enfileiraFilaEnc(filaAux,cartaRemov);
+
+            cartaAux = colunaOrigem->ini;
+        }
+    }
+
+    //move as cartas da coluna de origem para a coluna de destino
+    cartaAux = colunaOrigem->ini;
+    while (cartaAux != NULL) {
+        cartaRemov = desenfileiraFilaEnc(colunaOrigem);
+        enfileiraFilaEnc(colunaDestino, cartaRemov);
+
+        cartaAux = colunaOrigem->ini;
+    }
+    //Move as cartas de fila aux de volta para a coluna de origem
+    cartaAux = filaAux->ini;
+    while (cartaAux != NULL) {
+        cartaRemov = desenfileiraFilaEnc(filaAux);
+        enfileiraFilaEnc(colunaOrigem, cartaRemov);
+        cartaAux = filaAux->ini;
+    }
+    //Destroi a fila aux, liberando a memória no final do loop
+    destroiFilaEnc(filaAux);
+}
+
+
+//Função que desvira uma carta, trazendo ela da área não interagível para a interagível.
+void desviraCarta(FilaEnc *coluna_cima, PilhaEnc *coluna_baixo) {
+    if (coluna_baixo->topo != NULL) {
+        Info cartaRemov = desempilhaPilhaEnc(coluna_baixo); //Desempilha da parte não interagível para uma info auxiliar
+        enfileiraFilaEnc(coluna_cima, cartaRemov); //Enfileira da info auxiliar para a fila da parte interagível
+    }
+}
+
+/*
+[BARALHO DE COMPRAS]
+
+Função que desenha o baralho de compras na tela
+
+Recebe um ponteiro para a lista encadeada do baralho de compras, um inteiro clicado que representa se o mouse está pressionado
+e o float multi_res que é responsável por escalonar a textura à resolução da tela.
+*/
+void desenhaBaralhoCompras(ListaCircEnc *baralho, int clicado, float multi_res) {
+    //Verifica se a lista de cartas tá vazia
+    if (baralho->prim == NULL) return;
+
+    //Largura, altura e coordenadas da carta que representa o baralho
+    float largura = 50 * multi_res;
+    float altura = 70 * multi_res;
+    float posX = 20 * multi_res;
+    float posY = 20 * multi_res;
+
+    // Desenha a carta virada, que é a imagem padrão do baralho
+    Image cartaVirada = LoadImage("cartas/card_back_red.png");
+    ImageResize(&cartaVirada, largura, altura);
+    Texture2D imagemVirada = LoadTextureFromImage(cartaVirada);
+    UnloadImage(cartaVirada); //Unload na imagem pq n é mais necessária
+    DrawTexture(imagemVirada, posX, posY, WHITE);
+
+    //Se o jogador clicou na tela, leva a carta atual pra proxima na lista
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        Vector2 mousePos = GetMousePosition();
+        if (CheckCollisionPointRec(mousePos, (Rectangle){posX, posY, largura, altura})) {
+            // Move a carta atual para o fim da lista
+            baralho->prim = baralho->prim->prox; 
+        }
+    }
+
+    // Desenha a carta atual logo abaixo do monte, se houver cartas na lista
+    if (baralho->prim != NULL) {
+        Image cartaAtualImagem = LoadImage(baralho->prim->info.imagemtxt); // Assumindo que `imagemtxt` é o caminho da imagem
+        ImageResize(&cartaAtualImagem, largura, altura);
+        Texture2D imagemAtual = LoadTextureFromImage(cartaAtualImagem);
+        UnloadImage(cartaAtualImagem);
+        DrawTexture(imagemAtual, posX, posY + altura + 10, WHITE); // Desenha um pouco abaixo do monte
+    }
+
 
 }
